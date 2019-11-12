@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        .row{
+            margin-bottom:8px
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <form id="myForm">
+        <div class="row">
+            <div class="col-md-2">
+                <label for="name">图书名称</label>
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="bookname" id="name" placeholder="请输入图书名称">
+            </div>
+            <div class="col-md-2">
+                <label for="price">价格</label>
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="bookprice" id="price" placeholder="请输入价格">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+                <label for="type">类型</label>
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="booktype" id="type" placeholder="请输入类型">
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script type="text/javascript">
+    $(function(){
+        initTable();
+    })
+
+    $('.date').datetimepicker({
+        language: 'zh-CN',//显示中文
+        format: 'yyyy-mm-dd hh:ii:ss',//显示格式
+        minView: "month",//设置只显示到月份
+        initialDate: new Date(),//初始化当前日期
+        autoclose: true,//选中自动关闭
+        todayBtn: true//显示今日按钮
+    });
+</script>
+</html>

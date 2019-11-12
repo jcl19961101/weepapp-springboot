@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap3/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="../js/bootstrap3/css/bootstrap.css">
+
+    <script src="../js/bootstrap-table/bootstrap-table.js"></script>
+    <script src="../js/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+    <link rel="stylesheet" href="../js/bootstrap-table/bootstrap-table.css">
+    <script src="../bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
+    <script src="../bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+    <link rel="stylesheet" href="../bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
+
+    <script src="../js/bootstrap-bootbox/bootbox.js"></script>
+
+    <!-- 引入文件上传fileinput的css、js -->
+    <link rel="stylesheet" href="../js/bootstrap-fileinput/css/fileinput.css"/>
+    <script src="../js/bootstrap-fileinput/js/fileinput.js"></script>
+    <script src="../js/bootstrap-fileinput/js/locales/zh.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+
+    <div class="panel panel-default">
+        <div class="panel-heading">高级搜索</div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-1">书名:</div>
+                <div class="col-md-5">
+                    <input class="form-control" id="searchBookName"/>
+                </div>
+            </div>
+            <div class="col-md-6">
+               <button onclick="sezrchBook()" type="button" class="btn btn-info btn-block"><i class="glyphicon glyphicon-search"></i>搜索</button>
+            </div>
+        </div>
+    </div>
+
+        <div class="col-md-9">
+            <div id="toolbar">
+                <a class="btn btn-primary" href="javascript:addGoods()">新增</a>
+                <a class="btn btn-primary" href="javascript:delAll()">删除</a>
+            </div>
+            <table class="table" id="myTable"></table>
+        </div>
+
+</div>
+</body>
+<script>
+    $(function(){
+        initTable();
+        sezrchBook();
+    })
+
+    function sezrchBook(){
+        $("#myTable").bootstrapTable("refresh",{
+            query:{
+                page:1
+            }
+        })
+    }
+
+    var res;
+    function createAddContent(url){
+        $.ajax({
+            url:url,
+            async:false,
+            success:function(data){
+                res = data;
+            }
+        });
+        return res;
+    }
+
+    function openUpdate(id){
+        bootbox.dialog({
+            title:'修改图书',
+            message: createAddContent("../queryById?bookid="+id),
+            closeButton: true,
+            buttons : {
+                "success" : {
+                    "label" : "<i class='icon-ok'></i> 保存",
+                    "className" : "btn-sm btn-success",
+                    "callback" : function() {
+                        $.ajax({
+                            url:'../addBookPage',
+                            type:'post',
+                            data:$("#myForm").serialize(),
+                            success:function(){
+                                $('#myTable').bootstrapTable('refresh');
+                            }
+                        });
+                    }
+                },
+                "cancel" : {
+                    "label" : "<i class='icon-info'></i> 取消",
+                    "className" : "btn-sm btn-danger",
+                    "callback" : function() {
+
+                    }
+                }
+            }
+
+        });
+    }
+
+    function delAll(){
+        var books = $("#myTable").bootstrapTable('getSelections');
+        if(books.length<=0){
+            //alert("请至少选中一条数据！");
+            //bootbox.alert("请至少选中一条数据！");
+            bootbox.alert({
+                size: "small",
+                title: "提示",
+                message: "请至少选中一条数据！",
+                buttons: {
+                    ok: {
+                        label: '确定',
+                        className: 'btn-success'
+                    }
+                },
+                callback: function(){}
+            })
+        }else{
+            bootbox.confirm({
+                size: "small",
+                title: "提示",
+                message: "是否确认删除？",
+                buttons: {
+                    confirm: {
+                        label: '确定',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: '取消',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function(result){
+                    if(result){
+                        var ids = "";
+                        for (var i = 0; i < books.length; i++) {
+                            ids += ids == '' ? books[i].bookid : ","+books[i].bookid;
+                        }
+                        $.post('../delAll',{ids:ids},function(data){
+                            $('#myTable').bootstrapTable('refresh');
+                        })
+                    }
+                }
+            })
+        }
+
+    }
+
+    function addGoods(){
+        bootbox.dialog({
+            title:'添加图书',
+            message: createAddContent("../addBook"),
+            closeButton: true,
+            buttons : {
+                "success" : {
+                    "label" : "<i class='icon-ok'></i> 保存",
+                    "className" : "btn-sm btn-success",
+                    "callback" : function() {
+                        $.ajax({
+                            url:'../addBookPage',
+                            type:'post',
+                            data:$("#myForm").serialize(),
+                            success:function(){
+                                $('#myTable').bootstrapTable('refresh');
+                            }
+                        });
+                    }
+                },
+                "cancel" : {
+                    "label" : "<i class='icon-info'></i> 取消",
+                    "className" : "btn-sm btn-danger",
+                    "callback" : function() {
+
+                    }
+                }
+            }
+
+        });
+
+
+    }
+
+
+    $('.date').datetimepicker({
+        language: 'zh-CN',//显示中文
+        format: 'yyyy-mm-dd hh:ii:ss',//显示格式
+        minView: "month",//设置只显示到月份
+        initialDate: new Date(),//初始化当前日期
+        autoclose: true,//选中自动关闭
+        todayBtn: true//显示今日按钮
+    });
+
+    function initTable(){
+        //列表展示
+        $('#myTable').bootstrapTable({
+            toolbar:'#toolbar',
+            url:'../book/queryBook',//获取数据地址
+            striped:true,
+            queryParams:function(){
+                var searchBookName=$("#searchBookName").val();
+                return {
+                    page: this.pageNumber,
+                    rows:this.pageSize,
+                    bookname:searchBookName
+                };
+            },
+            columns:[
+                {checkbox:true},
+                {field:'bookid',title:'ID',align:'center',width:150},
+                {field:'bookname',title:'书名',align:'center',width:150},
+                {field:'bookprice',title:'价格',align:'center',width:150},
+                {field:'booktype',title:'类型',width:150},
+                {field:'cz',title:'操作',formatter:function(value,row,index){
+                        return '<button onclick="openUpdate('+row.bookid+')" type="button" class="btn btn-primary">修改</button>';
+                    }
+                }
+
+            ]
+        });
+    }
+</script>
+</html>
